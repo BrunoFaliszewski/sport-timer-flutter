@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "203021111433",
+    "project_id": "sport-timer-1aee0",
+    "storage_bucket": "sport-timer-1aee0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203021111433:android:481485de6c82ce5d713658",
+        "android_client_info": {
+          "package_name": "com.example.sport_timer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "203021111433-1rfmkuiapr90g03t3qalouub2o0gfd7l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sport_timer",
+            "certificate_hash": "dcc286693b751f48b397a0ffc574f90089e6f1d7"
+          }
+        },
+        {
+          "client_id": "203021111433-srvl2qn2go6ep23pm73quitmb0eultbm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAenN8KJnQ3EZS1hC2XJLb4cqf9iaRcYWs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "203021111433-srvl2qn2go6ep23pm73quitmb0eultbm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
