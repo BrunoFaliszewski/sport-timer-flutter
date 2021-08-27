@@ -1,12 +1,23 @@
-class Set {
+class TrainingData {
   String name;
   Map<String, int> exercises = {};
 
-  Set(this.name, this.exercises);
+  TrainingData(this.name, this.exercises);
 
   Map<String, dynamic> toJson() {
     return {
-      "exercises": exercises, // zamiat zapisywać dane po id, zapisywać dane po name of set
+      "exercises": exercises,
     };
+  }
+}
+
+// ignore: type_annotate_public_apis
+TrainingData createTrainingData(name, data) {
+  if (name is String && data is Map<String, int>) {
+    final TrainingData trainingData = TrainingData(name, data);
+
+    return trainingData;
+  } else {
+    return TrainingData("", {});
   }
 }

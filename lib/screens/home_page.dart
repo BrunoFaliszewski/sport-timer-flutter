@@ -1,28 +1,33 @@
+import 'dart:ui';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:sport_timer/training_data/exercises_list.dart';
 
 import '../dialogs/add_dialog.dart';
 import '../dialogs/save_dialog.dart';
 import '../training_data/current_training_data.dart';
 import '../training_data/training_data.dart';
 import 'profile_page.dart';
+import 'sets_page.dart';
 import 'training_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key, required User user})
-      : _user = user,
+  const HomePage({Key? key, required User user, CurrentTrainingData? currentTrainingData})
+      : _user = user, _currentTrainingData = currentTrainingData,
         super(key: key);
 
   final User _user;
+  final CurrentTrainingData? _currentTrainingData;
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final DatabaseReference _setsReference = FirebaseDatabase.instance.reference().child("sets");
+  final DatabaseReference _database = FirebaseDatabase.instance.reference();
 
   int _numberOfSets = 0;
   int _workMinutes = 0;
@@ -34,76 +39,69 @@ class _HomePageState extends State<HomePage> {
   late User _user;
 
   int exerciseIndex = 0;
+  List<Map<String, int>> exercises = [];
 
-  List sets = [];
-
-  CurrentTrainingData currentTrainingData = CurrentTrainingData();
+  CurrentTrainingData? _currentTrainingData = CurrentTrainingData();
 
   @override
   void initState() {
     _user = widget._user;
 
+    if (widget._currentTrainingData != null) {
+      _currentTrainingData = widget._currentTrainingData;
+    }
+
     super.initState();
   }
 
-  void addClicked() {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AddDialog(addTimes);
-      },
-    );
+  // ignore: use_setters_to_change_properties
+  void onOrder(Map<String, int> exercises) {
+    _currentTrainingData!.exercises = exercises;
   }
-
-  void saveClicked() {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return SaveDialog(saveTimes);
-      }
-    );
-  }
-  
 
   void saveTimes(String setName) {
     this.setName = setName;
-    final exercises = currentTrainingData.exercises;
-    final set = Set(this.setName, exercises);
+    final exercises = _currentTrainingData!.exercises;
+    final set = TrainingData(this.setName, exercises);
 
-    _setsReference.child(this.setName).set(set.toJson());
-
-    setState(() {
-      sets.add(set);
-      // ignore: avoid_print
-      print(sets);
-    });
+    _database.child(_user.uid).child("sets").child(setName).set(set.toJson());
   }
 
   void addTimes(String exerciseText) {
     this.exerciseText = exerciseText;
 
     if (_numberOfSets > 0 && _workMinutes * 60 + _workSeconds > 0 || _restMinutes * 60 + _restSeconds > 0) {
-      if (currentTrainingData.exercises.isEmpty == true) {
+      if (_currentTrainingData!.exercises.isEmpty == true) {
         exerciseIndex = 0;
       }
       for (var i = 0; i < _numberOfSets; i++) {
         if (_workMinutes * 60 + _workSeconds > 0) {
           if (this.exerciseText == "") {
-            currentTrainingData.addExercise("${exerciseIndex}Work", _workMinutes * 60 + _workSeconds);
+            _currentTrainingData!.addExercise("${exerciseIndex.toString().padLeft(4, "0")}Work", _workMinutes * 60 + _workSeconds);
+            final Map<String, int> _exercise = {"${exerciseIndex.toString().padLeft(4, "0")}Work" : _workMinutes * 60 + _workSeconds};
+            setState(() {
+              exercises.add(_exercise);
+            });
             exerciseIndex++;
           } else {
-            currentTrainingData.addExercise("$exerciseIndex${this.exerciseText}", _workMinutes * 60 + _workSeconds);
+            _currentTrainingData!.addExercise("${exerciseIndex.toString().padLeft(4, "0")}${this.exerciseText}", _workMinutes * 60 + _workSeconds);
+            final Map<String, int> _exercise = {"${exerciseIndex.toString().padLeft(4, "0")}${this.exerciseText}" : _workMinutes * 60 + _workSeconds};
+            setState(() {
+              exercises.add(_exercise);
+            });
             exerciseIndex++;
           }
         }
 
         if (_restMinutes * 60 + _restSeconds > 0) {
-          currentTrainingData.addExercise("${exerciseIndex}Rest", _restMinutes * 60 + _restSeconds);
+          _currentTrainingData!.addExercise("${exerciseIndex.toString().padLeft(4, "0")}Rest", _restMinutes * 60 + _restSeconds);
+          final Map<String, int> _exercise = {"${exerciseIndex.toString().padLeft(4, "0")}Rest" : _restMinutes * 60 + _restSeconds};
+          setState(() {
+            exercises.add(_exercise);
+          });
           exerciseIndex++;
         }
       }
-      // ignore: avoid_print
-      print(currentTrainingData.exercises);
     }
   }
 
@@ -121,15 +119,33 @@ class _HomePageState extends State<HomePage> {
           position: animation.drive(tween),
           child: child,
         );
-      },
+      }
     );
   }
 
   Route _routeToTrainingPageScreen() {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => TrainingPage(currentTrainingData: currentTrainingData, user: _user,),
+      pageBuilder: (context, animation, secondaryAnimation) => TrainingPage(currentTrainingData: _currentTrainingData, user: _user,),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
+        final end = Offset.zero;
+        final curve = Curves.ease;
+
+        final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      }
+    );
+  }
+
+  Route _routeToSetsPageScreen() {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => SetsPage(user: _user,),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(-1.0, 0.0);
         final end = Offset.zero;
         final curve = Curves.ease;
 
@@ -164,176 +180,275 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            Card(
+              child: ListTile(
+                title: const Text("Set Timer"),
+                selected: true,
+                onTap: () {
+
+                }
+              )
+            ),
+            Card(
+              child: ListTile(
+                title: const Text("My Sets"),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.of(context).pushReplacement(_routeToSetsPageScreen());
+                }
+              )
+            )
+          ]
+        )
+      ),
       body: Align(
         alignment: Alignment.topCenter,
         child: ListView(
+          shrinkWrap: true,
           children: [
+            const SizedBox(
+              height: 10,
+            ),
             Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
-                  child: Text(
-                    "Sets",
-                    style: TextStyle(fontSize: 25),
-                  ),
-                ),
-                NumberPicker(
-                  value: _numberOfSets,
-                  minValue: 0,
-                  maxValue: 100,
-                  axis: Axis.horizontal,
-                  onChanged: (value) => setState(() => _numberOfSets = value),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
+                  width: 350,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.black26),
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
-                  child: Text(
-                    "Work",
-                    style: TextStyle(fontSize: 25),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Column(
-                      children: [
-                        const Text(
-                          "Minutes",
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        NumberPicker(
-                          value: _workMinutes,
-                          minValue: 0,
-                          maxValue: 100,
-                          onChanged: (value) => setState(() => _workMinutes = value),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.black26),
-                          ),
-                        ),
-                      ],
+                    border: Border.all(
+                      color: Colors.black45
                     ),
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(20, 12, 20, 0),
-                      child: Text(
-                        ":",
-                        style: TextStyle(fontSize: 25),
+                    borderRadius: BorderRadius.circular(10.0)
+                  ),
+                  child: Column(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                        child: Text(
+                          "Sets",
+                          style: TextStyle(fontSize: 25),
+                        )
                       ),
-                    ),
-                    Column(
-                      children: [
-                        const Text(
-                          "Seconds",
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        NumberPicker(
-                          value: _workSeconds,
-                          minValue: 0,
-                          maxValue: 60,
-                          onChanged: (value) => setState(() => _workSeconds = value),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.black26),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                      NumberPicker(
+                        value: _numberOfSets,
+                        minValue: 0,
+                        maxValue: 100,
+                        axis: Axis.horizontal,
+                        onChanged: (value) => setState(() => _numberOfSets = value),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.black26),
+                        )
+                      )
+                    ]
+                  )
                 ),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
-                  child: Text(
-                    "Rest",
-                    style: TextStyle(fontSize: 25),
+                const SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
+                  width: 350,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.black45
+                    ),
+                    borderRadius: BorderRadius.circular(10.0)
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Column(
-                      children: [
-                        const Text(
-                          "Minutes",
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        NumberPicker(
-                          value: _restMinutes,
-                          minValue: 0,
-                          maxValue: 100,
-                          onChanged: (value) => setState(() => _restMinutes = value),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.black26),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(20, 12, 20, 0),
-                      child: Text(
-                        ":",
-                        style: TextStyle(fontSize: 25),
+                  child: Column(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                        child: Text(
+                          "Work",
+                          style: TextStyle(fontSize: 25),
+                        )
                       ),
-                    ),
-                    Column(
-                      children: [
-                        const Text(
-                          "Seconds",
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        NumberPicker(
-                          value: _restSeconds,
-                          minValue: 0,
-                          maxValue: 60,
-                          onChanged: (value) => setState(() => _restSeconds = value),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.black26),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Column(
+                            children: [
+                              const Text(
+                                "Minutes",
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              NumberPicker(
+                                value: _workMinutes,
+                                minValue: 0,
+                                maxValue: 100,
+                                onChanged: (value) => setState(() => _workMinutes = value),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.black26),
+                                )
+                              )
+                            ]
                           ),
-                        ),
-                      ],
+                          const Padding(
+                            padding: EdgeInsets.fromLTRB(20, 12, 20, 0),
+                            child: Text(
+                              ":",
+                              style: TextStyle(fontSize: 25),
+                            )
+                          ),
+                          Column(
+                            children: [
+                              const Text(
+                                "Seconds",
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              NumberPicker(
+                                value: _workSeconds,
+                                minValue: 0,
+                                maxValue: 59,
+                                onChanged: (value) => setState(() => _workSeconds = value),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.black26),
+                                )
+                              )
+                            ]
+                          )
+                        ]
+                      )
+                    ]
+                  )
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
+                  width: 350,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.black45
                     ),
-                  ],
+                    borderRadius: BorderRadius.circular(10.0)
+                  ),
+                  child: Column(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                        child: Text(
+                          "Rest",
+                          style: TextStyle(fontSize: 25),
+                        )
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Column(
+                            children: [
+                              const Text(
+                                "Minutes",
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              NumberPicker(
+                                value: _restMinutes,
+                                minValue: 0,
+                                maxValue: 100,
+                                onChanged: (value) => setState(() => _restMinutes = value),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.black26),
+                                )
+                              )
+                            ]
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.fromLTRB(20, 12, 20, 0),
+                            child: Text(
+                              ":",
+                              style: TextStyle(fontSize: 25),
+                            )
+                          ),
+                          Column(
+                            children: [
+                              const Text(
+                                "Seconds",
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              NumberPicker(
+                                value: _restSeconds,
+                                minValue: 0,
+                                maxValue: 59,
+                                onChanged: (value) => setState(() => _restSeconds = value),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.black26),
+                                )
+                              )
+                            ]
+                          )
+                        ]
+                      )
+                    ]
+                  )
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     OutlinedButton(
-                      onPressed: saveClicked,
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext dialogContext) {
+                            return SaveDialog(saveTimes);
+                          }
+                        );
+                      },
                       child: const Text(
                         "Save"
                       ),
                     ),
                     OutlinedButton(
-                      onPressed: currentTrainingData.reset,
+                      onPressed: () {
+                        _currentTrainingData!.reset();
+                        setState(() {
+                          exercises.clear();
+                        });
+                      },
                       child: const Text(
                         "Reset"
                       ),
                     ),
                     OutlinedButton(
-                      onPressed: addClicked,
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext dialogContext) {
+                            return AddDialog(addTimes);
+                          }
+                        );
+                      },
                       child: const Text(
                         "Add"
-                      ),
-                    ),
-                  ],
+                      )
+                    )
+                  ]
                 ),
                 OutlinedButton(
                   onPressed: () {
-                    Navigator.of(context).pushReplacement(_routeToTrainingPageScreen());
+                    if (_currentTrainingData!.exercises.isNotEmpty) {
+                      Navigator.of(context).pushReplacement(_routeToTrainingPageScreen());
+                    }
                   },
                   child: const Text(
                     "Start"
-                  ),
+                  )
                 ),
-              ],
+                ExercisesList(exercises, onOrder)
+              ]
             )
-          ],
+          ]
         )
-      ),
+      )
     );
   }
 }

@@ -7,44 +7,59 @@ import '../training_data/current_training_data.dart';
 import 'home_page.dart';
 
 class TrainingPage extends StatefulWidget {
-  const TrainingPage({ Key? key, required CurrentTrainingData currentTrainingData, required User user})
+  const TrainingPage({ Key? key, required CurrentTrainingData? currentTrainingData, required User user})
     : _currentTrainingData = currentTrainingData, _user = user,
       super(key: key);
 
-  final CurrentTrainingData _currentTrainingData;
+  final CurrentTrainingData? _currentTrainingData;
   final User _user;
 
   @override
   _TrainingPageState createState() => _TrainingPageState();
 }
 
-class _TrainingPageState extends State<TrainingPage> {
-  late CurrentTrainingData _currentTrainingData;
+class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderStateMixin {
+  late CurrentTrainingData? _currentTrainingData;
   late User _user;
   Timer? timer;
+  AnimationController? animationController;
 
   String exercise = "";
   String time = "";
-  int i = 0;
-  int j = 0;
+  int exerciseIndex = 0;
+  int timeIndex = 0;
+  bool iconPressed = true;
+  late Color currentBackgroundColor;
 
   void updateTime() {
-    if (i < _currentTrainingData.exercises.length) {
+    if (exerciseIndex < _currentTrainingData!.exercises.length) {
       setState(() {
-        time = j.toString();
+        time = timeIndex.toString();
+        exercise = _currentTrainingData!.exercises.keys.elementAt(exerciseIndex).substring(4);
+        if (exercise != "Rest") {
+          currentBackgroundColor = Colors.green;
+        } else {
+          currentBackgroundColor = Colors.red;
+        }
       });
 
-      j--;
+      timeIndex--;
 
-      if (j == 0) {
-        if (i + 1 < _currentTrainingData.exercises.length) {
-          i++;
-          j = _currentTrainingData.exercises.values.elementAt(i);
-        } else {
-          time = "Finish";
-          i++;
+      if (timeIndex == 0) {
+        exerciseIndex++;
+
+        // ignore: invariant_booleans
+        if (exerciseIndex < _currentTrainingData!.exercises.length) {
+          timeIndex = _currentTrainingData!.exercises.values.elementAt(exerciseIndex);
         }
       }
+    } else {
+      timer?.cancel();
+
+      setState(() {
+        exercise = "";
+        time = "Finish";
+      });
     }
   }
 
@@ -52,7 +67,12 @@ class _TrainingPageState extends State<TrainingPage> {
   void initState() {
     _currentTrainingData = widget._currentTrainingData;
     _user = widget._user;
-    j = _currentTrainingData.exercises.values.elementAt(0);
+    iconPressed = true;
+    animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 450));
+    currentBackgroundColor = Colors.green;
+    
+    timeIndex = _currentTrainingData!.exercises.values.elementAt(0);
+    exerciseIndex = 0;
 
     timer = Timer.periodic(const Duration(seconds: 1), (Timer t) => updateTime());
 
@@ -68,7 +88,7 @@ class _TrainingPageState extends State<TrainingPage> {
 
   Route _routeToHomePageScreen() {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => HomePage(user: _user),
+      pageBuilder: (context, animation, secondaryAnimation) => HomePage(user: _user, currentTrainingData: _currentTrainingData,),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(-1.0, 0.0);
         final end = Offset.zero;
@@ -80,13 +100,14 @@ class _TrainingPageState extends State<TrainingPage> {
           position: animation.drive(tween),
           child: child,
         );
-      },
+      }
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: currentBackgroundColor,
       appBar: AppBar(
         title: const Text("Sport Timer"),
         leading: IconButton(
@@ -94,7 +115,7 @@ class _TrainingPageState extends State<TrainingPage> {
             Navigator.of(context).pushReplacement(_routeToHomePageScreen());
           },
           icon: const Icon(Icons.arrow_back),
-        ),
+        )
       ),
       body: Center(
         child: Column(
@@ -102,23 +123,28 @@ class _TrainingPageState extends State<TrainingPage> {
           children: [
             Text(exercise),
             Text(time),
-          ],
-        ),
+            IconButton(
+              onPressed: () {
+                setState(() {
+                  if (iconPressed == true) {
+                    animationController!.forward();
+                    timer?.cancel();
+                    iconPressed = false;
+                  } else {
+                    animationController!.reverse();
+                    timer = Timer.periodic(const Duration(seconds: 1), (Timer t) => updateTime());
+                    iconPressed = true;
+                  }
+                });
+              },
+              icon: AnimatedIcon(
+                progress: animationController!,
+                icon: AnimatedIcons.pause_play,
+              )
+            )
+          ]
+        )
       )
     );
   }
 }
-
-// for (var i = 0; i < _currentTrainingData.exercises.length; i++) {
-//       setState(() {
-//         exercise = _currentTrainingData.exercises.keys.elementAt(i);
-//       });
-
-//       for (var j = _currentTrainingData.exercises.values.elementAt(i); j > 0; j--) {
-//         await Future.delayed(const Duration(seconds: 1));
-
-//         setState(() {
-//           time = j.toString();
-//         });
-//       }
-//     }

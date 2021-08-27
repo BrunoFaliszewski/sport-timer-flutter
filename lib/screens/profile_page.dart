@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../dialogs/theme_dialog.dart';
 import '../firebase/authentication.dart';
 import 'home_page.dart';
 import 'login_page.dart';
@@ -18,6 +19,9 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   late User _user;
+
+  bool isDarkMode = false;
+  late int theme;
 
   @override
   void initState() {
@@ -76,9 +80,19 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       body: Align(
         alignment: Alignment.topCenter,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: ListView(
           children: [
+            OutlinedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return const ThemeDialog();
+                  }
+                );
+              },
+              child: const Text("Theme")
+            ),
             OutlinedButton(
               onPressed: () async {
                 await Authentication.signOut(context: context);
@@ -92,3 +106,5 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
+
+// DynamicTheme.of(context)!.setTheme(Themes.red);

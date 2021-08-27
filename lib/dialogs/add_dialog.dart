@@ -12,12 +12,6 @@ class AddDialog extends StatefulWidget {
 class _AddDialogState extends State<AddDialog> {
   final controller = TextEditingController();
 
-  void okClicked() {
-    widget.addCallback(controller.text);
-    controller.clear();
-    Navigator.pop(context);
-  }
-
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -31,7 +25,11 @@ class _AddDialogState extends State<AddDialog> {
           child: const Text("CANCEL"),
         ),
         OutlinedButton(
-          onPressed: okClicked,
+          onPressed: () {
+            widget.addCallback(controller.text);
+            controller.clear();
+            Navigator.pop(context);
+          },
           child: const Text("OK"),
         ),
       ],
