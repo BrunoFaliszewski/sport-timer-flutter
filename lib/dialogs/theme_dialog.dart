@@ -15,33 +15,78 @@ class _ThemeDialogState extends State<ThemeDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text("Change Theme"),
-      content: Row(
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            onPressed: () {
-              DynamicTheme.of(context)!.setTheme(Themes.blue);
-            },
-            icon: const Icon(
-              Icons.circle,
-              color: Colors.blue,
-            )
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  DynamicTheme.of(context)!.setTheme(Themes.blue);
+                },
+                icon: const Icon(
+                  Icons.circle,
+                  color: Colors.blue,
+                )
+              ),
+              IconButton(
+                onPressed: () {
+                  DynamicTheme.of(context)!.setTheme(Themes.red);
+                },
+                icon: const Icon(
+                  Icons.circle,
+                  color: Colors.red,
+                )
+              ),
+              IconButton(
+                onPressed: () {
+                  DynamicTheme.of(context)!.setTheme(Themes.green);
+                },
+                icon: const Icon(
+                  Icons.circle,
+                  color: Colors.green,
+                )
+              ),
+              IconButton(
+                onPressed: () {
+                  DynamicTheme.of(context)!.setTheme(Themes.yellow);
+                },
+                icon: const Icon(
+                  Icons.circle,
+                  color: Colors.yellow,
+                )
+              ),
+              IconButton(
+                onPressed: () {
+                  DynamicTheme.of(context)!.setTheme(Themes.pink);
+                },
+                icon: const Icon(
+                  Icons.circle,
+                  color: Colors.pink,
+                )
+              )
+            ]
           ),
-          IconButton(
-            onPressed: () {
-              DynamicTheme.of(context)!.setTheme(Themes.red);
-            },
-            icon: const Icon(
-              Icons.circle,
-              color: Colors.red,
-            )
-          ),
-        ],
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  DynamicTheme.of(context)!.setTheme(Themes.purple);
+                },
+                icon: const Icon(
+                  Icons.circle,
+                  color: Colors.purple,
+                )
+              )
+            ]
+          )
+        ]
       ),
       actions: [
         OutlinedButton(
           onPressed: () => Navigator.pop(context),
           child: const Text("OK"),
-        ),
+        )
       ],
       elevation: 24.0,
     );

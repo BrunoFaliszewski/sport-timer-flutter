@@ -14,10 +14,11 @@ import 'profile_page.dart';
 import 'training_page.dart';
 
 class SetsPage extends StatefulWidget {
-  const SetsPage({ Key? key, required User user})
-    : _user = user,
+  const SetsPage({ Key? key, required CurrentTrainingData? currentTrainingData, required User user})
+    : _currentTrainingData = currentTrainingData, _user = user,
       super(key: key);
 
+  final CurrentTrainingData? _currentTrainingData;
   final User _user;
 
   @override
@@ -26,10 +27,10 @@ class SetsPage extends StatefulWidget {
 
 class _SetsPageState extends State<SetsPage> {
   late User _user;
+  CurrentTrainingData? _currentTrainingData;
   final DatabaseReference _database = FirebaseDatabase.instance.reference();
   late StreamSubscription _setsStream;
   PanelController panelController = PanelController();
-  CurrentTrainingData? _currentTrainingData;
 
   List<TrainingData> sets = [];
   List<Map<String, int>> exercises = [];
@@ -39,10 +40,8 @@ class _SetsPageState extends State<SetsPage> {
   @override
   void initState() {
     super.initState();
-
     _user = widget._user;
-
-    _currentTrainingData = CurrentTrainingData();
+    _currentTrainingData = widget._currentTrainingData;
 
     _setsStream = _database.child(_user.uid).child("sets").onValue.listen((event) {
       if (event.snapshot.value != null) {
@@ -109,9 +108,9 @@ class _SetsPageState extends State<SetsPage> {
     currentSet = _currentSet;
   }
 
-  Route _routeToHomePageScreen(User user) {
+  Route _routeToHomePageScreen() {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => HomePage(user: _user),
+      pageBuilder: (context, animation, secondaryAnimation) => HomePage(currentTrainingData: _currentTrainingData ,user: _user),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         final end = Offset.zero;
@@ -129,7 +128,7 @@ class _SetsPageState extends State<SetsPage> {
 
   Route _routeToProfilePageScreen() {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(user: _user),
+      pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(currentTrainingData: _currentTrainingData ,user: _user),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(0.0, 1.0);
         final end = Offset.zero;
@@ -192,7 +191,7 @@ class _SetsPageState extends State<SetsPage> {
                 title: const Text("Set Timer"),
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.of(context).pushReplacement(_routeToHomePageScreen(_user));
+                  Navigator.of(context).pushReplacement(_routeToHomePageScreen());
                 }
               )
             ),
@@ -218,25 +217,48 @@ class _SetsPageState extends State<SetsPage> {
           });
         },
         header: isPanelOpened == true
-          ? Row(
-            children: [
-              Text(sets[currentSet].name),
-              IconButton(
-                onPressed: () {
-                  panelController.close();
-                  isPanelOpened = false;
-                  _database.child(_user.uid).child("sets").child(sets[currentSet].name).remove();
-                },
-                icon: const Icon(Icons.delete_outlined)
-              ),
-              IconButton(
-                onPressed: () {
-                  _currentTrainingData!.exercises = sets[currentSet].exercises;
-                  Navigator.of(context).pushReplacement(_routeToTrainingPageScreen());
-                },
-                icon: const Icon(Icons.play_arrow)
-              )
-            ]
+          ? SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+                    child: Text(
+                      sets[currentSet].name,
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Theme.of(context).primaryColor
+                      )
+                    )
+                  )
+                ),
+                Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          panelController.close();
+                          isPanelOpened = false;
+                          _database.child(_user.uid).child("sets").child(sets[currentSet].name).remove();
+                        },
+                        icon: const Icon(Icons.delete_outlined)
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          _currentTrainingData!.exercises = sets[currentSet].exercises;
+                          Navigator.of(context).pushReplacement(_routeToTrainingPageScreen());
+                        },
+                        icon: const Icon(Icons.play_arrow)
+                      )
+                    ]
+                  )
+                )
+              ]
+            )
           )
           : null,
         panel: Padding(

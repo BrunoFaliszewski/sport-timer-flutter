@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 import '../training_data/current_training_data.dart';
@@ -19,15 +21,21 @@ class TrainingPage extends StatefulWidget {
 }
 
 class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderStateMixin {
-  late CurrentTrainingData? _currentTrainingData;
+  CurrentTrainingData? _currentTrainingData;
   late User _user;
+  final DatabaseReference _database = FirebaseDatabase.instance.reference();
   Timer? timer;
   AnimationController? animationController;
+  static AudioPlayer advancedPlayer = AudioPlayer();
+  static AudioCache player = AudioCache(fixedPlayer: advancedPlayer);
+  late StreamSubscription _soundStream;
 
   String exercise = "";
   String time = "";
   int exerciseIndex = 0;
   int timeIndex = 0;
+  late bool isFirst;
+  late bool isSound;
   bool iconPressed = true;
   late Color currentBackgroundColor;
 
@@ -35,11 +43,30 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
     if (exerciseIndex < _currentTrainingData!.exercises.length) {
       setState(() {
         time = timeIndex.toString();
+        if (isSound == true) {
+          if (time == "3") {
+            play("three.mp3");
+          } else if (time == "2") {
+            play("two.mp3");
+          } else if (time == "1") {
+            play("one.mp3");
+          }
+        }
         exercise = _currentTrainingData!.exercises.keys.elementAt(exerciseIndex).substring(4);
-        if (exercise != "Rest") {
-          currentBackgroundColor = Colors.green;
-        } else {
-          currentBackgroundColor = Colors.red;
+        if (isFirst) {
+          if (exercise != "Rest") {
+            currentBackgroundColor = Colors.green;
+            if (isSound == true) {
+              play("work.mp3");
+            }
+            isFirst = false;
+          } else {
+            currentBackgroundColor = Colors.red;
+            if (isSound == true) {
+              play("rest.mp3");
+            }
+            isFirst = false;
+          }
         }
       });
 
@@ -47,8 +74,8 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
 
       if (timeIndex == 0) {
         exerciseIndex++;
+        isFirst = true;
 
-        // ignore: invariant_booleans
         if (exerciseIndex < _currentTrainingData!.exercises.length) {
           timeIndex = _currentTrainingData!.exercises.values.elementAt(exerciseIndex);
         }
@@ -59,8 +86,18 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
       setState(() {
         exercise = "";
         time = "Finish";
+        if (isFirst) {
+          if (isSound == true) {
+            play("finish.mp3");
+          }
+          isFirst = false;
+        }
       });
     }
+  }
+
+  void play(String path) {
+    player.play(path);
   }
 
   @override
@@ -68,11 +105,24 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
     _currentTrainingData = widget._currentTrainingData;
     _user = widget._user;
     iconPressed = true;
+    isFirst = true;
     animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 450));
     currentBackgroundColor = Colors.green;
     
     timeIndex = _currentTrainingData!.exercises.values.elementAt(0);
     exerciseIndex = 0;
+
+    _soundStream = _database.child(_user.uid).child("sound").onValue.listen((event) {
+      if (event.snapshot.value != null) {
+        if (event.snapshot.value == "true") {
+          isSound = true;
+        } else {
+          isSound = false;
+        }
+      } else {
+        isSound = true;
+      }
+    });
 
     timer = Timer.periodic(const Duration(seconds: 1), (Timer t) => updateTime());
 
@@ -81,6 +131,8 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
 
   @override
   void dispose() {
+    _soundStream.cancel();
+
     timer?.cancel();
 
     super.dispose();

@@ -48,7 +48,14 @@ class _HomePageState extends State<HomePage> {
     _user = widget._user;
 
     if (widget._currentTrainingData != null) {
-      _currentTrainingData = widget._currentTrainingData;
+      setState(() {
+        _currentTrainingData = widget._currentTrainingData;
+        exercises.clear();
+        for (var i = 0; i < _currentTrainingData!.exercises.length; i++) {
+          final Map<String, int> _exercise = {_currentTrainingData!.exercises.keys.elementAt(i) : _currentTrainingData!.exercises.values.elementAt(i)};
+          exercises.add(_exercise);
+        }
+      });
     }
 
     super.initState();
@@ -107,7 +114,7 @@ class _HomePageState extends State<HomePage> {
 
   Route _routeToProfilePageScreen() {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(user: _user),
+      pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(currentTrainingData: _currentTrainingData ,user: _user),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(0.0, 1.0);
         final end = Offset.zero;
@@ -143,7 +150,7 @@ class _HomePageState extends State<HomePage> {
 
   Route _routeToSetsPageScreen() {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => SetsPage(user: _user,),
+      pageBuilder: (context, animation, secondaryAnimation) => SetsPage(currentTrainingData: _currentTrainingData ,user: _user),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(-1.0, 0.0);
         final end = Offset.zero;

@@ -22,7 +22,10 @@ class _SetsListState extends State<SetsList> {
         final TrainingData set = widget.sets[index];
         return Card(
           child: ListTile(
-            title: Text(set.name),
+            title: Text(
+              set.name,
+              style: TextStyle(color: Theme.of(context).primaryColor),
+            ),
             onTap: () {
               widget.setExercises(set);
               widget.currentSet(index);
