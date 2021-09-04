@@ -237,7 +237,6 @@ class _SetsPageState extends State<SetsPage> {
                 ),
                 Expanded(
                   child: Row(
-                    mainAxisSize: MainAxisSize.max,
                     children: [
                       IconButton(
                         onPressed: () {

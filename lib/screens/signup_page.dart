@@ -92,62 +92,82 @@ class _SignupPageState extends State<SignupPage> {
         ),
         title: const Text("Sport Timer"),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Form(
-            key: _registerFormKey,
-            child: Column(
-              children: <Widget>[
-                TextFormField(
-                  controller: _nameTextController,
-                  validator: (value) => Validator.validateName(name: value),
-                  decoration: const InputDecoration(hintText: "Name")
-                ),
-                TextFormField(
-                  controller: _emailTextController,
-                  validator: (value) => Validator.validateEmail(email: value),
-                  decoration: const InputDecoration(hintText: "Email")
-                ),
-                TextFormField(
-                  controller: _passwordTextController,
-                  validator: (value) => Validator.validatePassword(password: value),
-                  decoration: const InputDecoration(hintText: "Password")
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          if (_registerFormKey.currentState!.validate()) {
-                            final User? user = await registerUsingEmailPassword(
-                              name : _nameTextController.text,
-                              email : _emailTextController.text,
-                              password : _passwordTextController.text,
-                            );
-
-                            if (user != null) {
-                              Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                  builder: (context) => HomePage(user: user),
-                                ),
-                                ModalRoute.withName('/'),
-                              );
-                            }
-                          }
-                        },
-                        child: const Text(
-                          'Sign up',
-                          style: TextStyle(color: Colors.white),
-                        )
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Form(
+              key: _registerFormKey,
+              child: Column(
+                children: <Widget>[
+                  SizedBox(
+                    width: 300,
+                    child: Card(
+                      child: TextFormField(
+                        controller: _nameTextController,
+                        validator: (value) => Validator.validateName(name: value),
+                        decoration: const InputDecoration(hintText: "Name")
                       )
                     )
-                  ]
-                )
-              ]
+                  ),
+                  SizedBox(
+                    width: 300,
+                    child: Card(
+                      child: TextFormField(
+                        controller: _emailTextController,
+                        validator: (value) => Validator.validateEmail(email: value),
+                        decoration: const InputDecoration(hintText: "Email")
+                      )
+                    )
+                  ),
+                  SizedBox(
+                    width: 300,
+                    child: Card(
+                      child: TextFormField(
+                        controller: _passwordTextController,
+                        validator: (value) => Validator.validatePassword(password: value),
+                        decoration: const InputDecoration(hintText: "Password")
+                      )
+                    )
+                  ),
+                  SizedBox(
+                    width: 300,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              if (_registerFormKey.currentState!.validate()) {
+                                final User? user = await registerUsingEmailPassword(
+                                  name : _nameTextController.text,
+                                  email : _emailTextController.text,
+                                  password : _passwordTextController.text,
+                                );
+
+                                if (user != null) {
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(builder: (context) => HomePage(user: user)),
+                                    ModalRoute.withName('/'),
+                                  );
+                                }
+                              }
+                            },
+                            child: const Text(
+                              'Sign up',
+                              style: TextStyle(color: Colors.white),
+                            )
+                          )
+                        )
+                      ]
+                    )
+                  )
+                ]
+              )
             )
-          )
-        ]
+          ]
+        ),
       )
     );
   }

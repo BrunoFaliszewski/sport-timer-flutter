@@ -172,6 +172,17 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text("Sport Timer"),
         actions: [
+          IconButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext dialogContext) {
+                  return SaveDialog(saveTimes);
+                }
+              );
+            },
+            icon: const Icon(Icons.save_outlined)
+          ),
           if (_user.photoURL != null) IconButton(
             onPressed: () {
               Navigator.of(context).pushReplacement(_routeToProfilePageScreen());
@@ -209,6 +220,17 @@ class _HomePageState extends State<HomePage> {
               )
             )
           ]
+        )
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 10, 10),
+        child: FloatingActionButton(
+          onPressed: () {
+            if (_currentTrainingData!.exercises.isNotEmpty) {
+              Navigator.of(context).pushReplacement(_routeToTrainingPageScreen());
+            }
+          },
+          child: const Icon(Icons.play_arrow),
         )
       ),
       body: Align(
@@ -401,54 +423,47 @@ class _HomePageState extends State<HomePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    OutlinedButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext dialogContext) {
-                            return SaveDialog(saveTimes);
-                          }
-                        );
-                      },
-                      child: const Text(
-                        "Save"
-                      ),
-                    ),
-                    OutlinedButton(
-                      onPressed: () {
-                        _currentTrainingData!.reset();
-                        setState(() {
-                          exercises.clear();
-                        });
-                      },
-                      child: const Text(
-                        "Reset"
-                      ),
-                    ),
-                    OutlinedButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext dialogContext) {
-                            return AddDialog(addTimes);
-                          }
-                        );
-                      },
-                      child: const Text(
-                        "Add"
+                    Container(
+                      width: 150,
+                      height: 60,
+                      padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
+                      child: OutlinedButton(
+                        onPressed: () {
+                          _currentTrainingData!.reset();
+                          setState(() {
+                            exercises.clear();
+                          });
+                        },
+                        child: const Text(
+                          "Reset",
+                          style: TextStyle(
+                            fontSize: 20
+                          )
+                        )
                       )
+                    ),
+                    Container(
+                      width: 150,
+                      height: 60,
+                      padding: const EdgeInsets.fromLTRB(5, 5, 0, 5),
+                      child: OutlinedButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext dialogContext) {
+                              return AddDialog(addTimes);
+                            }
+                          );
+                        },
+                        child: const Text(
+                          "Add",
+                          style: TextStyle(
+                            fontSize: 20
+                          )
+                        )
+                      ),
                     )
                   ]
-                ),
-                OutlinedButton(
-                  onPressed: () {
-                    if (_currentTrainingData!.exercises.isNotEmpty) {
-                      Navigator.of(context).pushReplacement(_routeToTrainingPageScreen());
-                    }
-                  },
-                  child: const Text(
-                    "Start"
-                  )
                 ),
                 ExercisesList(exercises, onOrder)
               ]

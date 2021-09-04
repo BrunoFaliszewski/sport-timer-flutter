@@ -106,8 +106,8 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(
           builder: (context) => HomePage(
             user: user,
-          ),
-        ),
+          )
+        )
       );
     }
 
@@ -128,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
           position: animation.drive(tween),
           child: child,
         );
-      },
+      }
     );
   }
 
@@ -159,79 +159,105 @@ class _LoginPageState extends State<LoginPage> {
                           key: _formKey,
                           child: Column(
                             children: <Widget>[
-                              TextFormField(
-                                controller: _emailTextController,
-                                focusNode: _focusEmail,
-                                validator: (value) => Validator.validateEmail(email: value),
-                                decoration: const InputDecoration(
-                                  hintText: "Email",
-                                ),
+                              SizedBox(
+                                width: 300,
+                                child: Card(
+                                  child: TextFormField(
+                                    controller: _emailTextController,
+                                    focusNode: _focusEmail,
+                                    validator: (value) => Validator.validateEmail(email: value),
+                                    decoration: const InputDecoration(
+                                      hintText: "Email",
+                                    )
+                                  )
+                                )
                               ),
-                              TextFormField(
-                                controller: _passwordTextController,
-                                focusNode: _focusPassword,
-                                obscureText: true,
-                                validator: (value) => Validator.validatePassword(password: value),
-                                decoration: const InputDecoration(
-                                  hintText: "Password",
-                                ),
+                              SizedBox(
+                                width: 300,
+                                child: Card(
+                                  child: TextFormField(
+                                    controller: _passwordTextController,
+                                    focusNode: _focusPassword,
+                                    obscureText: true,
+                                    validator: (value) => Validator.validatePassword(password: value),
+                                    decoration: const InputDecoration(
+                                      hintText: "Password",
+                                    )
+                                  )
+                                )
                               ),
-                              Row(
-                                mainAxisAlignment : MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        _focusEmail.unfocus();
-                                        _focusPassword.unfocus();
+                              SizedBox(
+                                width: 300,
+                                child: SignInButton(
+                                  Buttons.Google,
+                                  onPressed: () async {
+                                    final User? user = await signInWithGoogle();
+                                    if (user != null) {
+                                      Navigator.of(context).pushReplacement(_routeToHomePageScreen(user));
+                                    }
+                                  }
+                                )
+                              ),
+                              SizedBox(
+                                width: 300,
+                                child: Row(
+                                  mainAxisAlignment : MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () async {
+                                          _focusEmail.unfocus();
+                                          _focusPassword.unfocus();
 
-                                        if (_formKey.currentState!.validate()) {
-                                          final User? user = await signInUsingEmailPassword(
-                                            email : _emailTextController.text,
-                                            password : _passwordTextController.text,
-                                          );
+                                          if (_formKey.currentState!.validate()) {
+                                            final User? user = await signInUsingEmailPassword(
+                                              email : _emailTextController.text,
+                                              password : _passwordTextController.text,
+                                            );
 
-                                          if (user != null) {
-                                            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePage(user: user)));
+                                            if (user != null) {
+                                              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePage(user: user)));
+                                            }
                                           }
-                                        }
-                                      },
-                                      child: const Text(
-                                        'Sign In',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                        },
+                                        child: const Text(
+                                          'Sign In',
+                                          style: TextStyle(color: Colors.white),
+                                        )
+                                      )
+                                    )
+                                  ]
+                                )
+                              ),
+                              SizedBox(
+                                width: 300,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const SignupPage()));
+                                        },
+                                        child: const Text("Sign Up")
+                                      )
+                                    )
+                                  ]
+                                )
                               )
-                            ],
-                          ),
-                        ),
-                        SignInButton(
-                          Buttons.Google,
-                          onPressed: () async {
-                            final User? user = await signInWithGoogle();
-                            if (user != null) {
-                              Navigator.of(context).pushReplacement(_routeToHomePageScreen(user));
-                            }
-                          }
-                        ),
-                      ],
+                            ]
+                          )
+                        )
+                      ]
                     );
                   }
                   return const CircularProgressIndicator();
-                },
-              ),
-              OutlinedButton(
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const SignupPage()));
-                },
-                child: const Text("Sign Up")
+                }
               )
-            ],
-          ),
+            ]
+          )
         )
-      ),
+      )
     );
   }
 }

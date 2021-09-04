@@ -34,6 +34,8 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
   String time = "";
   int exerciseIndex = 0;
   int timeIndex = 0;
+  double progressValue = 0.0;
+  double animationBegin = 0.0;
   late bool isFirst;
   late bool isSound;
   bool iconPressed = true;
@@ -43,6 +45,7 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
     if (exerciseIndex < _currentTrainingData!.exercises.length) {
       setState(() {
         time = timeIndex.toString();
+        progressValue = (_currentTrainingData!.exercises.values.elementAt(exerciseIndex) - timeIndex) / _currentTrainingData!.exercises.values.elementAt(exerciseIndex);
         if (isSound == true) {
           if (time == "3") {
             play("three.mp3");
@@ -86,6 +89,7 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
       setState(() {
         exercise = "";
         time = "Finish";
+        progressValue = 1.0;
         if (isFirst) {
           if (isSound == true) {
             play("finish.mp3");
@@ -158,44 +162,70 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: currentBackgroundColor,
-      appBar: AppBar(
-        title: const Text("Sport Timer"),
-        leading: IconButton(
-          onPressed: () {
-            Navigator.of(context).pushReplacement(_routeToHomePageScreen());
-          },
-          icon: const Icon(Icons.arrow_back),
-        )
+    final AppBar appbar = AppBar(
+      title: const Text("Sport Timer"),
+      leading: IconButton(
+        onPressed: () {
+          Navigator.of(context).pushReplacement(_routeToHomePageScreen());
+        },
+        icon: const Icon(Icons.arrow_back),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(exercise),
-            Text(time),
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  if (iconPressed == true) {
-                    animationController!.forward();
-                    timer?.cancel();
-                    iconPressed = false;
-                  } else {
-                    animationController!.reverse();
-                    timer = Timer.periodic(const Duration(seconds: 1), (Timer t) => updateTime());
-                    iconPressed = true;
-                  }
-                });
-              },
-              icon: AnimatedIcon(
-                progress: animationController!,
-                icon: AnimatedIcons.pause_play,
+      actions: [
+        IconButton(
+          onPressed: () {
+            setState(() {
+              if (iconPressed == true) {
+                animationController!.forward();
+                timer?.cancel();
+                iconPressed = false;
+              } else {
+                animationController!.reverse();
+                timer = Timer.periodic(const Duration(seconds: 1), (Timer t) => updateTime());
+                iconPressed = true;
+              }
+            });
+          },
+          icon: AnimatedIcon(
+            progress: animationController!,
+            icon: AnimatedIcons.pause_play,
+          )
+        )
+      ]
+    );
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: appbar,
+      body: Stack(
+        children: [
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height * progressValue,
+              color: currentBackgroundColor,
+            )
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(0, appbar.preferredSize.height + 10, 0, 0),
+              child: Text(
+                exercise,
+                style: const TextStyle(
+                  fontSize: 40
+                ),
+              ),
+            )
+          ),
+          Center(
+            child: Text(
+              time,
+              style: const TextStyle(
+                fontSize: 140
               )
             )
-          ]
-        )
+          )
+        ]
       )
     );
   }
