@@ -1,5 +1,6 @@
 import 'package:dynamic_themes/dynamic_themes.dart';
 import 'package:flutter/material.dart';
+
 import 'screens/login_page.dart';
 import 'themes.dart';
 
@@ -28,12 +29,10 @@ class App extends StatelessWidget {
               iconTheme: IconThemeData(
                 color: Colors.black87
               ),
-              textTheme: TextTheme(
-                headline6: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500
-                )
+              titleTextStyle: TextStyle(
+                color: Colors.black87,
+                fontSize: 20,
+                fontWeight: FontWeight.w500
               )
             )
           ),
@@ -48,12 +47,10 @@ class App extends StatelessWidget {
               iconTheme: IconThemeData(
                 color: Colors.black87
               ),
-              textTheme: TextTheme(
-                headline6: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500
-                )
+              titleTextStyle: TextStyle(
+                color: Colors.black87,
+                fontSize: 20,
+                fontWeight: FontWeight.w500
               )
             )
           ),
@@ -68,12 +65,10 @@ class App extends StatelessWidget {
               iconTheme: IconThemeData(
                 color: Colors.black87
               ),
-              textTheme: TextTheme(
-                headline6: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500
-                )
+              titleTextStyle: TextStyle(
+                color: Colors.black87,
+                fontSize: 20,
+                fontWeight: FontWeight.w500
               )
             )
           ),
@@ -88,12 +83,10 @@ class App extends StatelessWidget {
               iconTheme: IconThemeData(
                 color: Colors.black87
               ),
-              textTheme: TextTheme(
-                headline6: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500
-                )
+              titleTextStyle: TextStyle(
+                color: Colors.black87,
+                fontSize: 20,
+                fontWeight: FontWeight.w500
               )
             )
           ),
@@ -108,12 +101,10 @@ class App extends StatelessWidget {
               iconTheme: IconThemeData(
                 color: Colors.black87
               ),
-              textTheme: TextTheme(
-                headline6: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500
-                )
+              titleTextStyle: TextStyle(
+                color: Colors.black87,
+                fontSize: 20,
+                fontWeight: FontWeight.w500
               )
             )
           ),
@@ -128,12 +119,10 @@ class App extends StatelessWidget {
               iconTheme: IconThemeData(
                 color: Colors.black87
               ),
-              textTheme: TextTheme(
-                headline6: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500
-                )
+              titleTextStyle: TextStyle(
+                color: Colors.black87,
+                fontSize: 20,
+                fontWeight: FontWeight.w500
               )
             )
           )

@@ -146,7 +146,7 @@ class _SetsPageState extends State<SetsPage> {
 
   Route _routeToTrainingPageScreen() {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => TrainingPage(currentTrainingData: _currentTrainingData, user: _user,),
+      pageBuilder: (context, animation, secondaryAnimation) => TrainingPage(currentTrainingData: _currentTrainingData, user: _user),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(0.0, 1.0);
         final end = Offset.zero;
@@ -251,7 +251,7 @@ class _SetsPageState extends State<SetsPage> {
                           _currentTrainingData!.exercises = sets[currentSet].exercises;
                           Navigator.of(context).pushReplacement(_routeToTrainingPageScreen());
                         },
-                        icon: const Icon(Icons.play_arrow)
+                        icon: const Icon(Icons.play_arrow_outlined)
                       )
                     ]
                   )

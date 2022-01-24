@@ -1,3 +1,4 @@
+// ignore: avoid_classes_with_only_static_members
 class Validator {
   static String? validateName({required String? name}) {
     if (name == null) {

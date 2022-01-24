@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -36,11 +34,11 @@ class _HomePageState extends State<HomePage> {
   int _restSeconds = 0;
   String exerciseText = "";
   String setName = "";
-  late User _user;
 
   int exerciseIndex = 0;
   List<Map<String, int>> exercises = [];
 
+  late User _user;
   CurrentTrainingData? _currentTrainingData = CurrentTrainingData();
 
   @override
@@ -132,7 +130,7 @@ class _HomePageState extends State<HomePage> {
 
   Route _routeToTrainingPageScreen() {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => TrainingPage(currentTrainingData: _currentTrainingData, user: _user,),
+      pageBuilder: (context, animation, secondaryAnimation) => TrainingPage(currentTrainingData: _currentTrainingData, user: _user),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         final end = Offset.zero;
@@ -183,6 +181,14 @@ class _HomePageState extends State<HomePage> {
             },
             icon: const Icon(Icons.save_outlined)
           ),
+          IconButton(
+            onPressed: () {
+              if (_currentTrainingData!.exercises.isNotEmpty) {
+                Navigator.of(context).pushReplacement(_routeToTrainingPageScreen());
+              }
+            },
+            icon: const Icon(Icons.play_arrow_outlined)
+          ),
           if (_user.photoURL != null) IconButton(
             onPressed: () {
               Navigator.of(context).pushReplacement(_routeToProfilePageScreen());
@@ -220,17 +226,6 @@ class _HomePageState extends State<HomePage> {
               )
             )
           ]
-        )
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 0, 10, 10),
-        child: FloatingActionButton(
-          onPressed: () {
-            if (_currentTrainingData!.exercises.isNotEmpty) {
-              Navigator.of(context).pushReplacement(_routeToTrainingPageScreen());
-            }
-          },
-          child: const Icon(Icons.play_arrow),
         )
       ),
       body: Align(

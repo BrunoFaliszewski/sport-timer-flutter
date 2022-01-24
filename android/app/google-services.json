@@ -1,23 +1,24 @@
 {
   "project_info": {
     "project_number": "203021111433",
+    "firebase_url": "https://sport-timer-1aee0-default-rtdb.firebaseio.com",
     "project_id": "sport-timer-1aee0",
     "storage_bucket": "sport-timer-1aee0.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:203021111433:android:481485de6c82ce5d713658",
+        "mobilesdk_app_id": "1:203021111433:android:ff5e97723ece9dbe713658",
         "android_client_info": {
-          "package_name": "com.example.sport_timer"
+          "package_name": "com.timer.sport_timer"
         }
       },
       "oauth_client": [
         {
-          "client_id": "203021111433-1rfmkuiapr90g03t3qalouub2o0gfd7l.apps.googleusercontent.com",
+          "client_id": "203021111433-kgsfj1ltg9avchsn949r49jii4tb18ep.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.sport_timer",
+            "package_name": "com.timer.sport_timer",
             "certificate_hash": "dcc286693b751f48b397a0ffc574f90089e6f1d7"
           }
         },

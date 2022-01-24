@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sport_timer/training_data/current_training_data.dart';
 
+import '../dialogs/prepare_time_dialog.dart';
 import '../dialogs/theme_dialog.dart';
 import 'home_page.dart';
 import 'login_page.dart';
@@ -24,39 +25,31 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  late User _user;
   CurrentTrainingData? _currentTrainingData;
-  final DatabaseReference _database = FirebaseDatabase.instance.reference();
+  late User _user;
   late StreamSubscription _soundStream;
 
   bool isSound = true;
+  int prepareTime = 5;
   late int theme;
 
   @override
   void initState() {
-    _user = widget._user;
     _currentTrainingData = widget._currentTrainingData;
+    _user = widget._user;
 
-    _soundStream = _database.child(_user.uid).child("sound").onValue.listen((event) {
-      if (event.snapshot.value != null) {
-        if (event.snapshot.value == "true") {
-          setState(() {
-            isSound = true;
-          });
-        } else {
-          setState(() {
-            isSound = false;
-          });
-        }
-      } else {
-        _database.child(_user.uid).child("sound").set("true");
-        setState(() {
-          isSound = true;
-        });
-      }
-    });
+    getPrefs();
 
     super.initState();
+  }
+
+  void getPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      prepareTime = prefs.getInt('prepareTime') ?? 5;
+      isSound = prefs.getBool('isSound') ?? true;
+    });
   }
 
   @override
@@ -137,8 +130,11 @@ class _ProfilePageState extends State<ProfilePage> {
               child: ListTile(
                 trailing: Switch(
                   value: isSound,
-                  onChanged: (value) {
-                    _database.child(_user.uid).child("sound").set(value.toString());
+                  onChanged: (value) async {
+                    final prefs = await SharedPreferences.getInstance();
+
+                    prefs.setBool('isSound', value);
+                    getPrefs();
                   }
                 ),
                 title: Text(
@@ -146,6 +142,25 @@ class _ProfilePageState extends State<ProfilePage> {
                   style: TextStyle(color: Theme.of(context).primaryColor),
                 )
               )
+            ),
+            Card(
+              child: ListTile(
+                onTap: () {
+                  setState(() {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return PrepareDialog(getPrefs);
+                      }
+                    );
+                  });
+                },
+                trailing: Text("${prepareTime.toString()} seconds"),
+                title: Text(
+                  "Prepare Time",
+                  style: TextStyle(color: Theme.of(context).primaryColor),
+                ),
+              ),
             ),
             Card(
               child: ListTile(
@@ -169,9 +184,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   await signOut();
                   Navigator.of(context).pushReplacement(_routeToSignInScreen());
                 },
-                title: Text(
+                title: const Text(
                   "Sign Out",
-                  style: TextStyle(color: Theme.of(context).primaryColor)
+                  style: TextStyle(color: Colors.red)
                 )
               )
             )

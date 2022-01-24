@@ -40,12 +40,13 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
   late bool isSound;
   bool iconPressed = true;
   late Color currentBackgroundColor;
+  late Map<String, int> sortedExercisesMap;
 
   void updateTime() {
-    if (exerciseIndex < _currentTrainingData!.exercises.length) {
+    if (exerciseIndex < sortedExercisesMap.length) {
       setState(() {
         time = timeIndex.toString();
-        progressValue = (_currentTrainingData!.exercises.values.elementAt(exerciseIndex) - timeIndex) / _currentTrainingData!.exercises.values.elementAt(exerciseIndex);
+        progressValue = (sortedExercisesMap.values.elementAt(exerciseIndex) - timeIndex) / sortedExercisesMap.values.elementAt(exerciseIndex);
         if (isSound == true) {
           if (time == "3") {
             play("three.mp3");
@@ -55,7 +56,7 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
             play("one.mp3");
           }
         }
-        exercise = _currentTrainingData!.exercises.keys.elementAt(exerciseIndex).substring(4);
+        exercise = sortedExercisesMap.keys.elementAt(exerciseIndex).substring(4);
         if (isFirst) {
           if (exercise != "Rest") {
             currentBackgroundColor = Colors.green;
@@ -79,8 +80,8 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
         exerciseIndex++;
         isFirst = true;
 
-        if (exerciseIndex < _currentTrainingData!.exercises.length) {
-          timeIndex = _currentTrainingData!.exercises.values.elementAt(exerciseIndex);
+        if (exerciseIndex < sortedExercisesMap.length) {
+          timeIndex = sortedExercisesMap.values.elementAt(exerciseIndex);
         }
       }
     } else {
@@ -113,8 +114,6 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
     animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 450));
     currentBackgroundColor = Colors.green;
     
-    timeIndex = _currentTrainingData!.exercises.values.elementAt(0);
-    exerciseIndex = 0;
 
     _soundStream = _database.child(_user.uid).child("sound").onValue.listen((event) {
       if (event.snapshot.value != null) {
@@ -128,6 +127,23 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
       }
     });
 
+    _database.child(_user.uid).child("prepareTime").once().then((DataSnapshot snapshot) {
+      final value = snapshot.value;
+      if (value is int) {
+        _currentTrainingData!.exercises.addAll({"!000Prepare" : value});
+      }
+    });
+
+    final List sortedExercisesList = _currentTrainingData!.exercises.keys.toList();
+    sortedExercisesList.sort();
+    sortedExercisesMap = {};
+    for (var i = 0; i < sortedExercisesList.length; i++) {
+      sortedExercisesMap[sortedExercisesList[i].toString()] = _currentTrainingData!.exercises[sortedExercisesList[i].toString()]!;
+    }
+
+    timeIndex = sortedExercisesMap.values.elementAt(0);
+    exerciseIndex = 0;
+
     timer = Timer.periodic(const Duration(seconds: 1), (Timer t) => updateTime());
 
     super.initState();
@@ -135,16 +151,16 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
 
   @override
   void dispose() {
+    super.dispose();
+
     _soundStream.cancel();
 
     timer?.cancel();
-
-    super.dispose();
   }
 
   Route _routeToHomePageScreen() {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => HomePage(user: _user, currentTrainingData: _currentTrainingData,),
+      pageBuilder: (context, animation, secondaryAnimation) => HomePage(user: _user, currentTrainingData: _currentTrainingData),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(-1.0, 0.0);
         final end = Offset.zero;
@@ -208,7 +224,7 @@ class _TrainingPageState extends State<TrainingPage> with SingleTickerProviderSt
           Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: EdgeInsets.fromLTRB(0, appbar.preferredSize.height + 10, 0, 0),
+              padding: EdgeInsets.fromLTRB(0, appbar.preferredSize.height + 70, 0, 0),
               child: Text(
                 exercise,
                 style: const TextStyle(
